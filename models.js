@@ -6,9 +6,19 @@ class Restaurant {
         restaurant.id = data.id
         restaurant.name = data.name
         restaurant.image = data.image
+        restaurant.menus = []
 
         if (restaurant.id) {
-            return Promise.resolve(restaurant)
+            return new Promise((resolve, reject) => {
+                db.all('SELECT * FROM menus WHERE restaurant_id=?;', [restaurant.id], (err, rows) => {
+                    const arrayOfPromises = rows.map(row => new Menu(row))
+                    Promise.all(arrayOfPromises)
+                        .then(menus => {
+                        restaurant.menus = menus
+                        resolve(restaurant)
+                    }).catch(err => reject(err))
+                })
+            })
         } else {
             return new Promise((resolve, reject) => {
                 db.run('INSERT INTO restaurants(name, image) VALUES(?,?);', [restaurant.name, restaurant.image], function (err) {
@@ -19,6 +29,10 @@ class Restaurant {
             })
         }
     }
+    async addMenu(data) {
+        const menu = await new Menu({name: data.name, restaurant_id: this.id})
+        this.menus.push(menu)
+    }
 }
 
 class Menu {
@@ -28,9 +42,19 @@ class Menu {
         menu.name = data.name
         menu.image = data.image
         menu.restaurant_id = data.restaurant_id
+        menu.items = []
 
         if (menu.id) {
-            return Promise.resolve(menu)
+            return new Promise((resolve, reject) => {
+                db.all('SELECT * FROM items WHERE menu_id=?;', [menu.id], (err, rows) => {
+                    const arrayOfPromises = rows.map(row => new Item(row))
+                    Promise.all(arrayOfPromises)
+                        .then(items => {
+                        menu.items = items
+                        resolve(menu)
+                    }).catch(err => reject(err))
+                })
+            })
         } else {
             return new Promise((resolve, reject) => {
                 db.run('INSERT INTO menus(name, image, restaurant_id) VALUES(?,?,?);', [menu.name, menu.image, menu.restaurant_id], function (err) {
@@ -40,6 +64,10 @@ class Menu {
                 })
             })
         }
+    }
+    async addItem(data) {
+        const item = await new Item({name: data.name, menu_id: this.id})
+        this.items.push(item)
     }
 }
 
