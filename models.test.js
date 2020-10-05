@@ -102,7 +102,7 @@ describe('Items', () => {
             expect(pizza.name).toBe('Pizza Margherita')
         })
     })
-    test('check that item belongs to a restaurant', async () => {
+    test('check that item belongs to a menu', async () => {
         const menu = await new Menu({name: 'Salads', image: 'image.url', restaurant_id: 1})
         const item = await new Item({name: 'Caesar Salad', image: 'image.url', menu_id: 8})
         expect(item.menu_id).toBe(menu.id)
